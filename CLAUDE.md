@@ -69,6 +69,13 @@ bunx convex docs        # Open Convex documentation
 - Use `convex-svelte` package for Svelte integration (not React hooks)
 - Validators from `convex/values` for type-safe arguments
 
+### UI Components
+
+- **shadcn-svelte** for UI components - use `bunx shadcn-svelte@latest add <component>` to add new components
+- Components are installed to `src/lib/components/ui/`
+- **runed** for Svelte utilities and composables
+- Always prefer shadcn-svelte components over custom implementations when available
+
 ### Styling
 
 - Tailwind CSS 4 via `@tailwindcss/vite` plugin

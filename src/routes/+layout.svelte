@@ -2,8 +2,11 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import Header from '$lib/components/header.svelte';
+	import { page } from '$app/stores';
 
 	let { children } = $props();
+
+	const isHomepage = $derived($page.url.pathname === '/');
 </script>
 
 <svelte:head>
@@ -15,12 +18,18 @@
 	/>
 </svelte:head>
 
-<div class="relative flex min-h-screen flex-col bg-background text-foreground">
+<div
+	class="relative flex min-h-screen flex-col text-foreground {isHomepage ? '' : 'bg-background'}"
+>
 	<Header />
 	<main class="flex-1">
 		{@render children()}
 	</main>
-	<footer class="border-t border-border/40 py-6">
+	<footer
+		class="py-6 transition-colors duration-300 {isHomepage
+			? 'border-transparent bg-transparent'
+			: 'border-t border-border/40'}"
+	>
 		<div class="container mx-auto max-w-screen-xl px-4 text-center text-sm text-muted-foreground">
 			<p>&copy; {new Date().getFullYear()} Guillaume Taffin</p>
 		</div>
