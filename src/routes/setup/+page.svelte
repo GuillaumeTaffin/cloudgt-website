@@ -28,6 +28,13 @@
 			link: 'https://brew.sh/'
 		},
 		{
+			name: 'Stow',
+			description:
+				'GNU Stow is a symlink farm manager. Perfect for managing dotfiles and configuration files across multiple tools and projects.',
+			installCommand: 'brew install stow',
+			link: 'https://formulae.brew.sh/formula/stow'
+		},
+		{
 			name: 'Doppler CLI',
 			description:
 				'Secure secret management for developers. Inject environment variables and sync secrets across your team and environments.',
