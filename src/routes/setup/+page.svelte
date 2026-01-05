@@ -57,6 +57,13 @@
 				'Official GitHub command-line tool. Manage pull requests, issues, repositories, and more directly from your terminal.',
 			installCommand: 'brew install gh',
 			link: 'https://cli.github.com/'
+		},
+		{
+			name: 'Zed',
+			description:
+				'A high-performance, multiplayer code editor built in Rust. Designed for speed and collaboration with AI assistance built-in.',
+			installCommand: 'brew install --cask zed',
+			link: 'https://zed.dev/'
 		}
 	];
 
