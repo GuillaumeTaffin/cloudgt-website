@@ -64,6 +64,13 @@
 				'A high-performance, multiplayer code editor built in Rust. Designed for speed and collaboration with AI assistance built-in.',
 			installCommand: 'brew install --cask zed',
 			link: 'https://zed.dev/'
+		},
+		{
+			name: 'Bun',
+			description:
+				'A fast all-in-one JavaScript runtime and toolkit. Drop-in replacement for Node.js with native bundler, transpiler, test runner, and npm-compatible package manager.',
+			installCommand: 'brew install oven-sh/bun/bun',
+			link: 'https://bun.sh/'
 		}
 	];
 
