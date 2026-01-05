@@ -15,3 +15,5 @@ Personal website for Guillaume Taffin, Tech Leader at AKUR8, based in Montreal, 
 bun install
 bun run dev
 ```
+
+<!-- CI trigger -->
