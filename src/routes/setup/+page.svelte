@@ -4,11 +4,38 @@
 	import Check from '@lucide/svelte/icons/check';
 	import Copy from '@lucide/svelte/icons/copy';
 	import Terminal from '@lucide/svelte/icons/terminal';
+	import X from '@lucide/svelte/icons/x';
 
 	interface InstallStep {
 		label: string;
 		command: string;
 	}
+
+	type TagId =
+		| 'cli'
+		| 'desktop-app'
+		| 'package-manager'
+		| 'development'
+		| 'dotfiles'
+		| 'security'
+		| 'productivity'
+		| 'version-control';
+
+	interface Tag {
+		id: TagId;
+		label: string;
+	}
+
+	const availableTags: Tag[] = [
+		{ id: 'cli', label: 'CLI' },
+		{ id: 'desktop-app', label: 'Desktop App' },
+		{ id: 'package-manager', label: 'Package Manager' },
+		{ id: 'development', label: 'Development' },
+		{ id: 'dotfiles', label: 'Dotfiles' },
+		{ id: 'security', label: 'Security' },
+		{ id: 'productivity', label: 'Productivity' },
+		{ id: 'version-control', label: 'Version Control' }
+	];
 
 	interface Tool {
 		name: string;
@@ -16,23 +43,26 @@
 		installCommand?: string;
 		installSteps?: InstallStep[];
 		link?: string;
+		tags: TagId[];
 	}
 
 	const tools: Tool[] = [
 		{
 			name: 'Homebrew',
 			description:
-				'The missing package manager for macOS (or Linux). Install the tools you need that Apple (or your Linux system) didn\'t.',
+				"The missing package manager for macOS (or Linux). Install the tools you need that Apple (or your Linux system) didn't.",
 			installCommand:
 				'/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"',
-			link: 'https://brew.sh/'
+			link: 'https://brew.sh/',
+			tags: ['cli', 'package-manager']
 		},
 		{
 			name: 'Stow',
 			description:
 				'GNU Stow is a symlink farm manager. Perfect for managing dotfiles and configuration files across multiple tools and projects.',
 			installCommand: 'brew install stow',
-			link: 'https://formulae.brew.sh/formula/stow'
+			link: 'https://formulae.brew.sh/formula/stow',
+			tags: ['cli', 'dotfiles']
 		},
 		{
 			name: 'Doppler CLI',
@@ -42,38 +72,73 @@
 				{ label: 'Install GnuPG', command: 'brew install gnupg' },
 				{ label: 'Install Doppler', command: 'brew install dopplerhq/cli/doppler' }
 			],
-			link: 'https://docs.doppler.com/docs/cli'
+			link: 'https://docs.doppler.com/docs/cli',
+			tags: ['cli', 'security']
 		},
 		{
 			name: 'Mole',
 			description:
 				'A simple tool to help you claw through your files at the speed of light. Fast file search and navigation from the terminal.',
 			installCommand: 'brew install tw93/tap/mole',
-			link: 'https://github.com/tw93/Mole'
+			link: 'https://github.com/tw93/Mole',
+			tags: ['cli', 'productivity']
 		},
 		{
 			name: 'GitHub CLI',
 			description:
 				'Official GitHub command-line tool. Manage pull requests, issues, repositories, and more directly from your terminal.',
 			installCommand: 'brew install gh',
-			link: 'https://cli.github.com/'
+			link: 'https://cli.github.com/',
+			tags: ['cli', 'development', 'version-control']
 		},
 		{
 			name: 'Zed',
 			description:
 				'A high-performance, multiplayer code editor built in Rust. Designed for speed and collaboration with AI assistance built-in.',
 			installCommand: 'brew install --cask zed',
-			link: 'https://zed.dev/'
+			link: 'https://zed.dev/',
+			tags: ['desktop-app', 'development']
 		},
 		{
 			name: 'Bun',
 			description:
 				'A fast all-in-one JavaScript runtime and toolkit. Drop-in replacement for Node.js with native bundler, transpiler, test runner, and npm-compatible package manager.',
 			installCommand: 'brew install oven-sh/bun/bun',
-			link: 'https://bun.sh/'
+			link: 'https://bun.sh/',
+			tags: ['cli', 'package-manager', 'development']
 		}
 	];
 
+	// Filter state
+	let selectedTags = $state<Set<TagId>>(new Set());
+
+	// Derived filtered tools
+	let filteredTools = $derived(
+		selectedTags.size === 0
+			? tools
+			: tools.filter((tool) => tool.tags.some((tag) => selectedTags.has(tag)))
+	);
+
+	// Tag helpers
+	function toggleTag(tagId: TagId) {
+		const newSet = new Set(selectedTags);
+		if (newSet.has(tagId)) {
+			newSet.delete(tagId);
+		} else {
+			newSet.add(tagId);
+		}
+		selectedTags = newSet;
+	}
+
+	function clearFilters() {
+		selectedTags = new Set();
+	}
+
+	function getTagLabel(tagId: TagId): string {
+		return availableTags.find((t) => t.id === tagId)?.label ?? tagId;
+	}
+
+	// Clipboard state
 	let copiedKey = $state<string | null>(null);
 
 	async function copyToClipboard(text: string, key: string) {
@@ -91,7 +156,7 @@
 
 <div class="mx-auto max-w-2xl px-6 py-16 md:py-24">
 	<!-- Header -->
-	<header class="mb-16">
+	<header class="mb-8 md:mb-12">
 		<div class="mb-4 flex items-center gap-3">
 			<div class="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
 				<Terminal class="h-5 w-5 text-primary" />
@@ -104,9 +169,41 @@
 		</p>
 	</header>
 
+	<!-- Tag Filter Bar -->
+	<div class="mb-8 md:mb-12">
+		<div class="flex flex-wrap items-center gap-2">
+			{#each availableTags as tag (tag.id)}
+				<button
+					onclick={() => toggleTag(tag.id)}
+					class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 {selectedTags.has(
+						tag.id
+					)
+						? 'border-primary bg-primary text-primary-foreground'
+						: 'border-border/60 bg-muted/30 text-muted-foreground hover:border-border hover:bg-muted/50 hover:text-foreground'}"
+				>
+					{tag.label}
+				</button>
+			{/each}
+			{#if selectedTags.size > 0}
+				<button
+					onclick={clearFilters}
+					class="ml-1 flex items-center gap-1 rounded-full border border-border/60 bg-muted/30 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-destructive/50 hover:bg-destructive/10 hover:text-destructive"
+				>
+					<X class="h-3 w-3" />
+					<span class="hidden sm:inline">Clear</span>
+				</button>
+			{/if}
+		</div>
+		{#if selectedTags.size > 0}
+			<p class="mt-3 text-sm text-muted-foreground">
+				Showing {filteredTools.length} of {tools.length} tools
+			</p>
+		{/if}
+	</div>
+
 	<!-- Tools List -->
 	<div class="space-y-0">
-		{#each tools as tool, index (tool.name)}
+		{#each filteredTools as tool, index (tool.name)}
 			<article
 				class="group py-8 {index > 0 ? 'border-t border-border/50' : ''}"
 				style="animation: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) {index * 0.1}s both"
@@ -118,6 +215,21 @@
 						<p class="mt-1 text-sm leading-relaxed text-muted-foreground">
 							{tool.description}
 						</p>
+						<!-- Tool Tags -->
+						<div class="mt-2 flex flex-wrap gap-1.5">
+							{#each tool.tags as tagId (tagId)}
+								<button
+									onclick={() => toggleTag(tagId)}
+									class="rounded-full border border-border/40 bg-muted/20 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary {selectedTags.has(
+										tagId
+									)
+										? 'border-primary/50 bg-primary/10 text-primary'
+										: ''}"
+								>
+									{getTagLabel(tagId)}
+								</button>
+							{/each}
+						</div>
 					</div>
 					{#if tool.link}
 						<a
