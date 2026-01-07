@@ -3,6 +3,8 @@
 	import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
 	import Check from '@lucide/svelte/icons/check';
 	import Copy from '@lucide/svelte/icons/copy';
+	import Square from '@lucide/svelte/icons/square';
+	import SquareCheck from '@lucide/svelte/icons/square-check';
 	import Terminal from '@lucide/svelte/icons/terminal';
 	import X from '@lucide/svelte/icons/x';
 
@@ -148,6 +150,49 @@
 			copiedKey = null;
 		}, 2000);
 	}
+
+	// Tool selection state for bulk export (all selected by default)
+	let selectedTools = $state<Set<string>>(new Set(tools.map((t) => t.name)));
+
+	function toggleToolSelection(toolName: string) {
+		const newSet = new Set(selectedTools);
+		if (newSet.has(toolName)) {
+			newSet.delete(toolName);
+		} else {
+			newSet.add(toolName);
+		}
+		selectedTools = newSet;
+	}
+
+	function selectAllTools() {
+		selectedTools = new Set(filteredTools.map((t) => t.name));
+	}
+
+	function deselectAllTools() {
+		selectedTools = new Set();
+	}
+
+	// Generate consolidated commands from selected tools
+	let consolidatedCommands = $derived.by(() => {
+		const commands: string[] = [];
+		for (const tool of tools) {
+			if (!selectedTools.has(tool.name)) continue;
+
+			if (tool.installSteps) {
+				for (const step of tool.installSteps) {
+					commands.push(step.command);
+				}
+			} else if (tool.installCommand) {
+				commands.push(tool.installCommand);
+			}
+		}
+		return commands.join(' && ');
+	});
+
+	let selectedCount = $derived(selectedTools.size);
+	let allFilteredSelected = $derived(
+		filteredTools.length > 0 && filteredTools.every((t) => selectedTools.has(t.name))
+	);
 </script>
 
 <svelte:head>
@@ -199,6 +244,31 @@
 				Showing {filteredTools.length} of {tools.length} tools
 			</p>
 		{/if}
+
+		<!-- Selection controls -->
+		<div class="mt-4 flex items-center gap-3 border-t border-border/30 pt-4">
+			<span class="text-xs font-medium text-muted-foreground">Selection:</span>
+			<button
+				onclick={selectAllTools}
+				disabled={allFilteredSelected}
+				class="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground/50"
+			>
+				Select all
+			</button>
+			<span class="text-muted-foreground/50">|</span>
+			<button
+				onclick={deselectAllTools}
+				disabled={selectedCount === 0}
+				class="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground/50"
+			>
+				Deselect all
+			</button>
+			{#if selectedCount > 0}
+				<span class="ml-auto text-xs text-muted-foreground">
+					{selectedCount} tool{selectedCount !== 1 ? 's' : ''} selected
+				</span>
+			{/if}
+		</div>
 	</div>
 
 	<!-- Tools List -->
@@ -210,8 +280,23 @@
 			>
 				<!-- Tool Header -->
 				<div class="mb-4 flex items-start justify-between gap-4">
-					<div class="min-w-0 flex-1">
-						<h2 class="text-xl font-medium tracking-tight">{tool.name}</h2>
+					<div class="flex min-w-0 flex-1 gap-3">
+						<!-- Selection checkbox -->
+						<button
+							onclick={() => toggleToolSelection(tool.name)}
+							class="mt-1 shrink-0 text-muted-foreground transition-colors hover:text-primary"
+							aria-label={selectedTools.has(tool.name)
+								? `Deselect ${tool.name}`
+								: `Select ${tool.name}`}
+						>
+							{#if selectedTools.has(tool.name)}
+								<SquareCheck class="h-5 w-5 text-primary" />
+							{:else}
+								<Square class="h-5 w-5" />
+							{/if}
+						</button>
+						<div class="min-w-0 flex-1">
+							<h2 class="text-xl font-medium tracking-tight">{tool.name}</h2>
 						<p class="mt-1 text-sm leading-relaxed text-muted-foreground">
 							{tool.description}
 						</p>
@@ -229,6 +314,7 @@
 									{getTagLabel(tagId)}
 								</button>
 							{/each}
+						</div>
 						</div>
 					</div>
 					{#if tool.link}
@@ -307,4 +393,40 @@
 			</article>
 		{/each}
 	</div>
+
+	<!-- Spacer for sticky panel -->
+	{#if selectedCount > 0}
+		<div class="h-24"></div>
+	{/if}
 </div>
+
+<!-- Sticky Export Panel -->
+{#if selectedCount > 0}
+	<div
+		class="fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur-sm"
+		style="animation: fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both"
+	>
+		<div class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-6 py-4">
+			<div class="min-w-0 flex-1">
+				<p class="text-sm font-medium">
+					{selectedCount} tool{selectedCount !== 1 ? 's' : ''} selected
+				</p>
+				<p class="truncate text-xs text-muted-foreground">
+					Ready to copy {selectedCount === 1 ? 'command' : 'all commands joined with &&'}
+				</p>
+			</div>
+			<Button
+				onclick={() => copyToClipboard(consolidatedCommands, 'bulk-export')}
+				class="shrink-0 gap-2"
+			>
+				{#if copiedKey === 'bulk-export'}
+					<Check class="h-4 w-4" />
+					<span>Copied!</span>
+				{:else}
+					<Copy class="h-4 w-4" />
+					<span>Copy all commands</span>
+				{/if}
+			</Button>
+		</div>
+	</div>
+{/if}
