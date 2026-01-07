@@ -3,6 +3,7 @@
 	import ArrowUpRight from '@lucide/svelte/icons/arrow-up-right';
 	import Check from '@lucide/svelte/icons/check';
 	import Copy from '@lucide/svelte/icons/copy';
+	import Package from '@lucide/svelte/icons/package';
 	import Square from '@lucide/svelte/icons/square';
 	import SquareCheck from '@lucide/svelte/icons/square-check';
 	import Terminal from '@lucide/svelte/icons/terminal';
@@ -151,8 +152,20 @@
 		}, 2000);
 	}
 
-	// Tool selection state for bulk export (all selected by default)
-	let selectedTools = $state<Set<string>>(new Set(tools.map((t) => t.name)));
+	// Export mode state (off by default)
+	let exportMode = $state(false);
+	let selectedTools = $state<Set<string>>(new Set());
+
+	function enterExportMode() {
+		exportMode = true;
+		// Select all filtered tools when entering export mode
+		selectedTools = new Set(filteredTools.map((t) => t.name));
+	}
+
+	function exitExportMode() {
+		exportMode = false;
+		selectedTools = new Set();
+	}
 
 	function toggleToolSelection(toolName: string) {
 		const newSet = new Set(selectedTools);
@@ -172,7 +185,7 @@
 		selectedTools = new Set();
 	}
 
-	// Generate consolidated commands from selected tools
+	// Generate consolidated commands from selected tools (multi-line format)
 	let consolidatedCommands = $derived.by(() => {
 		const commands: string[] = [];
 		for (const tool of tools) {
@@ -186,7 +199,7 @@
 				commands.push(tool.installCommand);
 			}
 		}
-		return commands.join(' && ');
+		return commands.join('\n');
 	});
 
 	let selectedCount = $derived(selectedTools.size);
@@ -245,30 +258,44 @@
 			</p>
 		{/if}
 
-		<!-- Selection controls -->
-		<div class="mt-4 flex items-center gap-3 border-t border-border/30 pt-4">
-			<span class="text-xs font-medium text-muted-foreground">Selection:</span>
-			<button
-				onclick={selectAllTools}
-				disabled={allFilteredSelected}
-				class="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground/50"
-			>
-				Select all
-			</button>
-			<span class="text-muted-foreground/50">|</span>
-			<button
-				onclick={deselectAllTools}
-				disabled={selectedCount === 0}
-				class="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground/50"
-			>
-				Deselect all
-			</button>
-			{#if selectedCount > 0}
-				<span class="ml-auto text-xs text-muted-foreground">
-					{selectedCount} tool{selectedCount !== 1 ? 's' : ''} selected
-				</span>
-			{/if}
-		</div>
+		<!-- Export mode controls -->
+		{#if exportMode}
+			<div class="mt-4 flex items-center gap-3 border-t border-border/30 pt-4">
+				<span class="text-xs font-medium text-muted-foreground">Selection:</span>
+				<button
+					onclick={selectAllTools}
+					disabled={allFilteredSelected}
+					class="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground/50"
+				>
+					Select all
+				</button>
+				<span class="text-muted-foreground/50">|</span>
+				<button
+					onclick={deselectAllTools}
+					disabled={selectedCount === 0}
+					class="text-xs font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground/50"
+				>
+					Deselect all
+				</button>
+				<button
+					onclick={exitExportMode}
+					class="ml-auto flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+				>
+					<X class="h-3 w-3" />
+					Cancel
+				</button>
+			</div>
+		{:else}
+			<div class="mt-4 border-t border-border/30 pt-4">
+				<button
+					onclick={enterExportMode}
+					class="flex items-center gap-2 text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
+				>
+					<Package class="h-4 w-4" />
+					Bulk export commands
+				</button>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Tools List -->
@@ -281,40 +308,42 @@
 				<!-- Tool Header -->
 				<div class="mb-4 flex items-start justify-between gap-4">
 					<div class="flex min-w-0 flex-1 gap-3">
-						<!-- Selection checkbox -->
-						<button
-							onclick={() => toggleToolSelection(tool.name)}
-							class="mt-1 shrink-0 text-muted-foreground transition-colors hover:text-primary"
-							aria-label={selectedTools.has(tool.name)
-								? `Deselect ${tool.name}`
-								: `Select ${tool.name}`}
-						>
-							{#if selectedTools.has(tool.name)}
-								<SquareCheck class="h-5 w-5 text-primary" />
-							{:else}
-								<Square class="h-5 w-5" />
-							{/if}
-						</button>
+						{#if exportMode}
+							<!-- Selection checkbox (only in export mode) -->
+							<button
+								onclick={() => toggleToolSelection(tool.name)}
+								class="mt-1 shrink-0 text-muted-foreground transition-colors hover:text-primary"
+								aria-label={selectedTools.has(tool.name)
+									? `Deselect ${tool.name}`
+									: `Select ${tool.name}`}
+							>
+								{#if selectedTools.has(tool.name)}
+									<SquareCheck class="h-5 w-5 text-primary" />
+								{:else}
+									<Square class="h-5 w-5" />
+								{/if}
+							</button>
+						{/if}
 						<div class="min-w-0 flex-1">
 							<h2 class="text-xl font-medium tracking-tight">{tool.name}</h2>
-						<p class="mt-1 text-sm leading-relaxed text-muted-foreground">
-							{tool.description}
-						</p>
-						<!-- Tool Tags -->
-						<div class="mt-2 flex flex-wrap gap-1.5">
-							{#each tool.tags as tagId (tagId)}
-								<button
-									onclick={() => toggleTag(tagId)}
-									class="rounded-full border border-border/40 bg-muted/20 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary {selectedTags.has(
-										tagId
-									)
-										? 'border-primary/50 bg-primary/10 text-primary'
-										: ''}"
-								>
-									{getTagLabel(tagId)}
-								</button>
-							{/each}
-						</div>
+							<p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+								{tool.description}
+							</p>
+							<!-- Tool Tags -->
+							<div class="mt-2 flex flex-wrap gap-1.5">
+								{#each tool.tags as tagId (tagId)}
+									<button
+										onclick={() => toggleTag(tagId)}
+										class="rounded-full border border-border/40 bg-muted/20 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary {selectedTags.has(
+											tagId
+										)
+											? 'border-primary/50 bg-primary/10 text-primary'
+											: ''}"
+									>
+										{getTagLabel(tagId)}
+									</button>
+								{/each}
+							</div>
 						</div>
 					</div>
 					{#if tool.link}
@@ -395,38 +424,44 @@
 	</div>
 
 	<!-- Spacer for sticky panel -->
-	{#if selectedCount > 0}
-		<div class="h-24"></div>
+	{#if exportMode && selectedCount > 0}
+		<div class="h-64"></div>
 	{/if}
 </div>
 
 <!-- Sticky Export Panel -->
-{#if selectedCount > 0}
+{#if exportMode && selectedCount > 0}
 	<div
 		class="fixed inset-x-0 bottom-0 z-50 border-t border-border/50 bg-background/95 backdrop-blur-sm"
 		style="animation: fade-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both"
 	>
-		<div class="mx-auto flex max-w-2xl items-center justify-between gap-4 px-6 py-4">
-			<div class="min-w-0 flex-1">
+		<div class="mx-auto max-w-2xl px-6 py-4">
+			<!-- Header -->
+			<div class="mb-3 flex items-center justify-between">
 				<p class="text-sm font-medium">
 					{selectedCount} tool{selectedCount !== 1 ? 's' : ''} selected
 				</p>
-				<p class="truncate text-xs text-muted-foreground">
-					Ready to copy {selectedCount === 1 ? 'command' : 'all commands joined with &&'}
-				</p>
+				<Button
+					onclick={() => copyToClipboard(consolidatedCommands, 'bulk-export')}
+					size="sm"
+					class="gap-2"
+				>
+					{#if copiedKey === 'bulk-export'}
+						<Check class="h-4 w-4" />
+						<span>Copied!</span>
+					{:else}
+						<Copy class="h-4 w-4" />
+						<span>Copy all</span>
+					{/if}
+				</Button>
 			</div>
-			<Button
-				onclick={() => copyToClipboard(consolidatedCommands, 'bulk-export')}
-				class="shrink-0 gap-2"
+			<!-- Command preview -->
+			<div
+				class="max-h-36 overflow-auto rounded-lg border border-border/40 bg-muted/30"
 			>
-				{#if copiedKey === 'bulk-export'}
-					<Check class="h-4 w-4" />
-					<span>Copied!</span>
-				{:else}
-					<Copy class="h-4 w-4" />
-					<span>Copy all commands</span>
-				{/if}
-			</Button>
+				<pre
+					class="px-4 py-3 font-mono-display text-sm leading-relaxed">{consolidatedCommands}</pre>
+			</div>
 		</div>
 	</div>
 {/if}
