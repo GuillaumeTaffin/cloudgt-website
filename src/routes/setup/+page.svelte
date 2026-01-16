@@ -109,6 +109,14 @@
 			installCommand: 'brew install oven-sh/bun/bun',
 			link: 'https://bun.sh/',
 			tags: ['cli', 'package-manager', 'development']
+		},
+		{
+			name: 'Atuin',
+			description:
+				'Magical shell history. Sync, search, and backup shell history across all your machines with end-to-end encryption.',
+			installCommand: 'brew install atuin',
+			link: 'https://atuin.sh/',
+			tags: ['cli', 'productivity']
 		}
 	];
 
