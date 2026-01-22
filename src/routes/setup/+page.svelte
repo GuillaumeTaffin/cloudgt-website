@@ -111,6 +111,14 @@
 			tags: ['cli', 'package-manager', 'development']
 		},
 		{
+			name: 'uv',
+			description:
+				'An extremely fast Python package and project manager, written in Rust. Drop-in replacement for pip, pip-tools, pipx, poetry, pyenv, and virtualenv with 10-100x faster performance.',
+			installCommand: 'brew install uv',
+			link: 'https://docs.astral.sh/uv/',
+			tags: ['cli', 'package-manager', 'development']
+		},
+		{
 			name: 'Atuin',
 			description:
 				'Magical shell history. Sync, search, and backup shell history across all your machines with end-to-end encryption.',
