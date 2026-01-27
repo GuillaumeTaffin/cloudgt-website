@@ -117,6 +117,25 @@
 			installCommand: 'brew install atuin',
 			link: 'https://atuin.sh/',
 			tags: ['cli', 'productivity']
+		},
+		{
+			name: 'SDKMAN',
+			description:
+				'The Software Development Kit Manager. Easily install, switch between, and manage multiple versions of SDKs like Java, Kotlin, Scala, and more.',
+			installSteps: [
+				{ label: 'Add SDKMAN tap', command: 'brew tap sdkman/tap' },
+				{ label: 'Install SDKMAN CLI', command: 'brew install sdkman-cli' }
+			],
+			link: 'https://github.com/sdkman/homebrew-tap',
+			tags: ['cli', 'development', 'package-manager']
+		},
+		{
+			name: 'Starship',
+			description:
+				'The minimal, blazing-fast, and infinitely customizable prompt for any shell. Written in Rust for speed and efficiency.',
+			installCommand: 'brew install starship',
+			link: 'https://starship.rs/',
+			tags: ['cli', 'productivity']
 		}
 	];
 
