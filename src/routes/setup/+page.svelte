@@ -136,6 +136,14 @@
 			installCommand: 'brew install starship',
 			link: 'https://starship.rs/',
 			tags: ['cli', 'productivity']
+		},
+		{
+			name: 'Branchlet',
+			description:
+				'Interactive CLI tool for managing Git worktrees. Easily create, list, and delete worktrees with smart configuration and automatic file copying.',
+			installCommand: 'npm install -g branchlet',
+			link: 'https://github.com/raghavpillai/branchlet',
+			tags: ['cli', 'development', 'version-control']
 		}
 	];
 
