@@ -1,4 +1,8 @@
 <script lang="ts">
+	import Github from '@lucide/svelte/icons/github';
+	import Linkedin from '@lucide/svelte/icons/linkedin';
+	import Mail from '@lucide/svelte/icons/mail';
+	import MapPin from '@lucide/svelte/icons/map-pin';
 </script>
 
 <svelte:head>
@@ -7,9 +11,6 @@
 
 <!-- Full-screen background layer (extends behind header/footer) -->
 <div class="fixed inset-0 -z-10 bg-background" aria-hidden="true">
-	<!-- Light mode: Dot grid pattern -->
-	<div class="dot-grid-light absolute inset-0 dark:opacity-0"></div>
-
 	<!-- Light mode: Soft gradient accents -->
 	<div class="gradient-accent-light absolute inset-0 dark:opacity-0"></div>
 
@@ -60,9 +61,9 @@
 			</div>
 
 			<!-- Subtitle -->
-			<div class="animate-fade-up mt-8 text-center" style="animation-delay: 0.2s">
+			<div class="animate-fade-up mt-6 text-center" style="animation-delay: 0.2s">
 				<p class="text-lg text-muted-foreground md:text-xl">
-					Currently at
+					Tech Leader at
 					<a
 						href="https://akur8.com"
 						target="_blank"
@@ -71,18 +72,47 @@
 					>
 						AKUR8
 					</a>
-					<span class="mx-2 text-muted-foreground/40">·</span>
-					<span class="text-muted-foreground/70">Montreal, Canada</span>
+				</p>
+				<p class="mt-1.5 flex items-center justify-center gap-1.5 text-sm text-muted-foreground/70">
+					<MapPin class="h-3.5 w-3.5" />
+					Montreal, Canada
 				</p>
 			</div>
 
-			<!-- Decorative element -->
-			<div class="animate-fade-in mt-16 flex justify-center" style="animation-delay: 0.4s">
-				<div class="flex items-center gap-3">
-					<div class="h-px w-12 bg-gradient-to-r from-transparent to-border"></div>
-					<div class="h-1.5 w-1.5 rounded-full bg-primary/60"></div>
-					<div class="h-px w-12 bg-gradient-to-l from-transparent to-border"></div>
-				</div>
+			<!-- Social links -->
+			<div class="animate-fade-up mt-10 flex justify-center gap-3" style="animation-delay: 0.3s">
+				<a
+					href="https://github.com/GuillaumeTaffin"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+					aria-label="GitHub"
+				>
+					<Github class="h-[18px] w-[18px]" />
+				</a>
+				<a
+					href="https://www.linkedin.com/in/guillaume-taffin-31343b129/"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+					aria-label="LinkedIn"
+				>
+					<Linkedin class="h-[18px] w-[18px]" />
+				</a>
+				<a
+					href="mailto:hello@example.com"
+					class="flex h-10 w-10 items-center justify-center rounded-full border border-border/50 text-muted-foreground transition-all duration-200 hover:border-primary/30 hover:bg-primary/5 hover:text-foreground"
+					aria-label="Email"
+				>
+					<Mail class="h-[18px] w-[18px]" />
+				</a>
+			</div>
+
+			<!-- Tagline -->
+			<div class="animate-fade-up mt-10" style="animation-delay: 0.4s">
+				<p class="text-center text-sm tracking-wide text-muted-foreground/50 italic">
+					Helping teams ship great software.
+				</p>
 			</div>
 		</div>
 	</section>
